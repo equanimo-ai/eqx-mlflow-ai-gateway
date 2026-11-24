@@ -12,7 +12,7 @@
 #
 # Resource names are the dev defaults from infra/terraform (outputs.tf), kept in the
 # env block below instead of running `terraform init` here.
-name: AI Gateway deploy (dev)
+name: Deploy dev
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ cache-mode: none
 
 # A deploy must finish; never cancel one mid-flight.
 concurrency:
-  group: ai-gateway-deploy-dev
+  group: eqx-mlflow-deploy-dev
   cancel-in-progress: false
 
 defaults:
@@ -71,7 +71,7 @@ jobs:
           fi
           aws ecr get-login-password --region "$AWS_REGION" |
             docker login --username AWS --password-stdin "$REGISTRY"
-          docker build --platform linux/amd64 -f docker/ai-gateway/Dockerfile -t "$IMAGE" .
+          docker build --platform linux/amd64 -f docker/mlflow/Dockerfile -t "$IMAGE" .
           docker push "$IMAGE"
 
       - name: Define one-off task helper
