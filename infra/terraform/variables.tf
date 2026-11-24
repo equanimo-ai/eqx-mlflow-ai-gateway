@@ -3,7 +3,7 @@ variable "environment" { type = string }
 
 variable "hostname" {
   type        = string
-  description = "Public hostname, e.g. ai-gateway.dev.equanimo.io."
+  description = "Public hostname, e.g. mlflow.dev.equanimo.io."
 }
 
 variable "shell_origin" {

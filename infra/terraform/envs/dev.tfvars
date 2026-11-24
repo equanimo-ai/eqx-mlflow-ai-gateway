@@ -1,8 +1,6 @@
-region      = "us-east-1"
-environment = "dev"
-# Temporary: LiteLLM still owns ai-gateway.dev.equanimo.io (ALB rules, CloudFront,
-# Route53 in another stack). Switch to it at the LiteLLM cutover (Task 12).
-hostname                   = "ai-gateway-new.dev.equanimo.io"
+region                     = "us-east-1"
+environment                = "dev"
+hostname                   = "mlflow.dev.equanimo.io"
 alb_listener_rule_priority = 400
 shell_origin               = "https://app.dev.equanimo.io"
 shared_alb_name            = "eqx-alb"
