@@ -12,3 +12,7 @@ output "db_bootstrap_run_task" {
     "--network-configuration 'awsvpcConfiguration={subnets=[${join(",", module.deploy.vpc_private_subnet_ids)}],securityGroups=[${nonsensitive(data.aws_ssm_parameter.db_client_sg.value)}],assignPublicIp=DISABLED}'",
   ])
 }
+
+output "ecr_repository_url" {
+  value = aws_ecr_repository.gateway.repository_url
+}
