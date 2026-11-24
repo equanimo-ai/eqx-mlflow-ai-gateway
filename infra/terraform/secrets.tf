@@ -1,12 +1,17 @@
 # Losing or rotating this value makes stored provider API keys undecryptable.
+# prevent_destroy blocks any destroy or replace; a deliberate dev reset requires
+# removing prevent_destroy from both resources first.
 resource "random_password" "kek" {
   length  = 48
   special = false
+
+  lifecycle { prevent_destroy = true }
 }
 
 resource "aws_secretsmanager_secret" "kek" {
-  name                    = "eqx-mlflow-gateway-${var.environment}-kek"
-  recovery_window_in_days = var.environment == "dev" ? 0 : 30
+  name = "eqx-mlflow-gateway-${var.environment}-kek"
+
+  lifecycle { prevent_destroy = true }
 }
 
 resource "aws_secretsmanager_secret_version" "kek" {
