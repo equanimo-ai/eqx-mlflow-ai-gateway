@@ -40,3 +40,8 @@ output "private_subnet_ids" {
   description = "Private subnets for one-off tasks."
   value       = nonsensitive(module.deploy.vpc_private_subnet_ids)
 }
+
+output "internal_url" {
+  description = "Direct in-VPC URL for the Anthropic-native passthrough (plain HTTP inside the VPC)."
+  value       = var.internal_hostname == "" ? "" : "http://${var.internal_hostname}:5000"
+}

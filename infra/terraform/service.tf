@@ -37,16 +37,17 @@ module "service" {
   # app-private, empty path so the task role cannot read other apps' /apc/dev/* params.
   ssm_read_prefix = "${module.deploy.ssm_prefix}/modules/mlflow-gateway"
 
-  # Reached only through the ALB; no Cloud Map registration.
-  enable_service_discovery      = false
-  allowed_security_group_ids    = data.aws_lb.shared.security_groups
-  additional_security_group_ids = [nonsensitive(data.aws_ssm_parameter.db_client_sg.value)]
+  # The ALB serves the public host; Cloud Map gives in-VPC callers a direct, internal name.
+  enable_service_discovery       = var.internal_hostname != ""
+  service_discovery_namespace_id = module.deploy.ecs_service_discovery_namespace_id
+  allowed_security_group_ids     = concat(tolist(data.aws_lb.shared.security_groups), var.internal_client_security_group_ids)
+  additional_security_group_ids  = [nonsensitive(data.aws_ssm_parameter.db_client_sg.value)]
 
   environment_variables = {
     MLFLOW_ARTIFACT_ROOT               = "s3://${aws_s3_bucket.artifacts.bucket}"
     MLFLOW_UI_GATEWAY_ONLY             = "true"
     MLFLOW_SERVER_FRAME_ANCESTORS      = var.shell_origin
-    MLFLOW_SERVER_ALLOWED_HOSTS        = var.hostname
+    MLFLOW_SERVER_ALLOWED_HOSTS        = join(",", compact([var.hostname, var.internal_hostname, var.internal_hostname == "" ? "" : "${var.internal_hostname}:5000"]))
     MLFLOW_SERVER_CORS_ALLOWED_ORIGINS = "https://${var.hostname},${var.shell_origin}"
   }
 

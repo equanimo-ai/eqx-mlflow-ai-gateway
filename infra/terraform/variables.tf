@@ -31,3 +31,15 @@ variable "log_retention_days" {
   type    = number
   default = 7
 }
+
+variable "internal_hostname" {
+  type        = string
+  default     = ""
+  description = "Cloud Map name in-VPC callers use, e.g. eqx-mlflow-gateway.shared-services-dev.internal. Empty disables the internal route."
+}
+
+variable "internal_client_security_group_ids" {
+  type        = list(string)
+  default     = []
+  description = "Security groups allowed to reach the service directly on port 5000 (in-VPC callers such as the Policy Engine Lambda)."
+}
