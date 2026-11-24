@@ -1,4 +1,4 @@
-# Build and deploy the MLflow AI Gateway (dev only; workflow_dispatch only).
+# Build and deploy the MLflow AI Gateway (dev only; push to main on docker/mlflow or this file, or manual dispatch).
 #
 # Terraform (infra/terraform) owns config; this workflow owns code: it pushes the
 # image, runs the DB bootstrap and migrate one-off tasks, then points the service
@@ -15,6 +15,11 @@
 name: Deploy dev
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'docker/mlflow/**'
+      - '.github/workflows/deploy-dev.yml'
   workflow_dispatch:
 
 permissions: {}
