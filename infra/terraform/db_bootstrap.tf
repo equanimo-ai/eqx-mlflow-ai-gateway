@@ -22,7 +22,7 @@ resource "random_password" "db_app" {
 }
 
 resource "aws_secretsmanager_secret" "db_url" {
-  name                    = "eqx-mlflow-gateway-${var.environment}-db-url"
+  name                    = "eqx-mlflow-gateway-db-url"
   recovery_window_in_days = var.environment == "dev" ? 0 : 30
 }
 
@@ -32,7 +32,7 @@ resource "aws_secretsmanager_secret_version" "db_url" {
 }
 
 resource "aws_secretsmanager_secret" "db_app_password" {
-  name                    = "eqx-mlflow-gateway-${var.environment}-db-app-password"
+  name                    = "eqx-mlflow-gateway-db-app-password"
   recovery_window_in_days = var.environment == "dev" ? 0 : 30
 }
 
@@ -42,12 +42,12 @@ resource "aws_secretsmanager_secret_version" "db_app_password" {
 }
 
 resource "aws_cloudwatch_log_group" "db_bootstrap" {
-  name              = "/ecs/eqx-mlflow-gateway-${var.environment}-db-bootstrap"
+  name              = "/ecs/eqx-mlflow-gateway-db-bootstrap"
   retention_in_days = var.log_retention_days
 }
 
 resource "aws_iam_role" "db_bootstrap_execution" {
-  name = "eqx-mlflow-gateway-${var.environment}-db-bootstrap-exec"
+  name = "eqx-mlflow-gateway-db-bootstrap-exec"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -88,7 +88,7 @@ resource "aws_iam_role_policy" "db_bootstrap_secrets" {
 }
 
 resource "aws_ecs_task_definition" "db_bootstrap" {
-  family                   = "eqx-mlflow-gateway-${var.environment}-db-bootstrap"
+  family                   = "eqx-mlflow-gateway-db-bootstrap"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = 256

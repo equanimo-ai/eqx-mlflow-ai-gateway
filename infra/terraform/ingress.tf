@@ -8,7 +8,7 @@ data "aws_lb_listener" "https" {
 }
 
 resource "aws_lb_target_group" "this" {
-  name        = "eqx-mlflow-gw-${var.environment}"
+  name        = "eqx-mlflow-gw"
   port        = 5000
   protocol    = "HTTP"
   vpc_id      = module.deploy.vpc_id

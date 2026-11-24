@@ -20,7 +20,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "artifacts" {
 module "service" {
   source = "./modules/ecs-fargate-service"
 
-  name                       = "eqx-mlflow-gateway-${var.environment}"
+  name                       = "eqx-mlflow-gateway"
   cluster_arn                = module.deploy.ecs_cluster_arn
   vpc_id                     = module.deploy.vpc_id
   subnet_ids                 = module.deploy.vpc_private_subnet_ids

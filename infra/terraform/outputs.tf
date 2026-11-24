@@ -28,7 +28,7 @@ output "service_name" {
 
 output "task_definition_family" {
   description = "Task definition family (the module uses its name input); CI registers revisions under it."
-  value       = "eqx-mlflow-gateway-${var.environment}"
+  value       = "eqx-mlflow-gateway"
 }
 
 output "service_security_group_id" {

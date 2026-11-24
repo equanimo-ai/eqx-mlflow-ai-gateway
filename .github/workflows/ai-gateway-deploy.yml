@@ -32,11 +32,11 @@ defaults:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: eqx-mlflow-gateway-dev
+  ECR_REPOSITORY: eqx-mlflow-gateway
   ECS_CLUSTER: eqx-shared-services
-  ECS_SERVICE: eqx-mlflow-gateway-dev
-  TASK_FAMILY: eqx-mlflow-gateway-dev
-  BOOTSTRAP_FAMILY: eqx-mlflow-gateway-dev-db-bootstrap
+  ECS_SERVICE: eqx-mlflow-gateway
+  TASK_FAMILY: eqx-mlflow-gateway
+  BOOTSTRAP_FAMILY: eqx-mlflow-gateway-db-bootstrap
 
 jobs:
   deploy:

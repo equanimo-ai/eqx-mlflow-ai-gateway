@@ -1,5 +1,5 @@
 resource "aws_ecr_repository" "gateway" {
-  name                 = "eqx-mlflow-gateway-${var.environment}"
+  name                 = "eqx-mlflow-gateway"
   image_tag_mutability = "IMMUTABLE"
   image_scanning_configuration { scan_on_push = true }
 }

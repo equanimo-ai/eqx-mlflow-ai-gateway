@@ -9,7 +9,7 @@ resource "random_password" "kek" {
 }
 
 resource "aws_secretsmanager_secret" "kek" {
-  name = "eqx-mlflow-gateway-${var.environment}-kek"
+  name = "eqx-mlflow-gateway-kek"
 
   lifecycle { prevent_destroy = true }
 }
