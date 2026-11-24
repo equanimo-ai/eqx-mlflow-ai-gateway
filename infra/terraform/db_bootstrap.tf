@@ -10,13 +10,20 @@ data "aws_ssm_parameter" "db_client_sg" {
   name = "/apc/${var.environment}/deploy/db/client_security_group_id"
 }
 
+# RDS encrypts its managed master secret with a customer-managed key, so reading it
+# needs kms:Decrypt on that key as well. describe-secret returns the key ARN.
+data "aws_secretsmanager_secret" "db_master" {
+  arn = nonsensitive(data.aws_ssm_parameter.db_master_secret_arn.value)
+}
+
 resource "random_password" "db_app" {
   length  = 40
   special = false
 }
 
 resource "aws_secretsmanager_secret" "db_url" {
-  name = "eqx-mlflow-gateway-${var.environment}-db-url"
+  name                    = "eqx-mlflow-gateway-${var.environment}-db-url"
+  recovery_window_in_days = var.environment == "dev" ? 0 : 30
 }
 
 resource "aws_secretsmanager_secret_version" "db_url" {
@@ -25,7 +32,8 @@ resource "aws_secretsmanager_secret_version" "db_url" {
 }
 
 resource "aws_secretsmanager_secret" "db_app_password" {
-  name = "eqx-mlflow-gateway-${var.environment}-db-app-password"
+  name                    = "eqx-mlflow-gateway-${var.environment}-db-app-password"
+  recovery_window_in_days = var.environment == "dev" ? 0 : 30
 }
 
 resource "aws_secretsmanager_secret_version" "db_app_password" {
@@ -60,14 +68,22 @@ resource "aws_iam_role_policy" "db_bootstrap_secrets" {
   role = aws_iam_role.db_bootstrap_execution.id
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = ["secretsmanager:GetSecretValue"]
-      Resource = [
-        nonsensitive(data.aws_ssm_parameter.db_master_secret_arn.value),
-        aws_secretsmanager_secret.db_app_password.arn,
-      ]
-    }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = ["secretsmanager:GetSecretValue"]
+        Resource = [
+          nonsensitive(data.aws_ssm_parameter.db_master_secret_arn.value),
+          aws_secretsmanager_secret.db_app_password.arn,
+        ]
+      },
+      {
+        Effect    = "Allow"
+        Action    = ["kms:Decrypt"]
+        Resource  = [data.aws_secretsmanager_secret.db_master.kms_key_id]
+        Condition = { StringEquals = { "kms:ViaService" = "secretsmanager.${var.region}.amazonaws.com" } }
+      },
+    ]
   })
 }
 
