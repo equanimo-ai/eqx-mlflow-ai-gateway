@@ -19,6 +19,9 @@ on:
     branches: [main]
     paths:
       - 'docker/mlflow/**'
+      - 'mlflow/**'
+      - 'libs/**'
+      - 'pyproject.toml'
       - '.github/workflows/deploy-dev.yml'
   workflow_dispatch:
 
