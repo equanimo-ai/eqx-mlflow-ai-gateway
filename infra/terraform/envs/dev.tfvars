@@ -4,6 +4,7 @@ hostname                   = "mlflow.dev.equanimo.io"
 alb_listener_rule_priority = 400
 shell_origin               = "https://app.dev.equanimo.io"
 shared_alb_name            = "eqx-alb"
+memory_mb                  = 4096
 capacity_provider_strategy = [{ capacity_provider = "FARGATE_SPOT", weight = 1, base = 0 }]
 
 # Pass at apply time with -var (not set here, needs live AWS):
