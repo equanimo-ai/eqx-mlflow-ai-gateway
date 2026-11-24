@@ -126,6 +126,12 @@ http = "mlflow.deployments.mlflow"
 https = "mlflow.deployments.mlflow"
 openai = "mlflow.deployments.openai"
 
+[project.entry-points."mlflow.workspace_provider"]
+"eqx+postgresql" = "eqx_mlflow.workspace_store:build_tenant_workspace_store"
+"eqx+mysql" = "eqx_mlflow.workspace_store:build_tenant_workspace_store"
+"eqx+sqlite" = "eqx_mlflow.workspace_store:build_tenant_workspace_store"
+"eqx+mssql" = "eqx_mlflow.workspace_store:build_tenant_workspace_store"
+
 [tool.setuptools.package-data]
 mlflow = [
   "store/db_migrations/alembic.ini",
@@ -145,6 +151,6 @@ mlflow = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["mlflow", "mlflow.*"]
+include = ["mlflow", "mlflow.*", "eqx_mlflow", "eqx_mlflow.*"]
 exclude = ["tests", "tests.*"]
 namespaces = false

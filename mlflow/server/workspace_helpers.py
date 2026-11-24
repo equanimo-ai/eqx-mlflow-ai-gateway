@@ -96,13 +96,27 @@ def _workspace_error_response(exc: Exception) -> Response:
     return response
 
 
+def _skips_workspace_resolution(path: str) -> bool:
+    normalized = path.rstrip("/")
+    # The server-info endpoint must remain reachable even if the workspace header points to a
+    # missing workspace.
+    if normalized.endswith("/mlflow/server-info"):
+        return True
+
+    # Health and version carry no workspace data, and probes such as a load balancer health
+    # check cannot send a workspace header. Match the exact routed path, not a suffix: a suffix
+    # match would also exempt e.g. ``/gateway/proxy/<endpoint>/health``.
+    from mlflow.server import STATIC_PREFIX_ENV_VAR
+
+    prefix = os.environ.get(STATIC_PREFIX_ENV_VAR, "").rstrip("/")
+    return normalized in {f"{prefix}/health", f"{prefix}/version"}
+
+
 def resolve_workspace_for_request_if_enabled(
     path: str,
     header_value: str | None,
 ) -> Workspace | None:
-    # The server-info endpoint must remain reachable even if the workspace header points to a
-    # missing workspace, so skip workspace resolution entirely for this route.
-    if path.rstrip("/").endswith("/mlflow/server-info"):
+    if _skips_workspace_resolution(path):
         return None
 
     if not MLFLOW_ENABLE_WORKSPACES.get():

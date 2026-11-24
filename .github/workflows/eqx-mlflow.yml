@@ -1,0 +1,42 @@
+name: eqx-mlflow
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    paths:
+      - "eqx_mlflow/**"
+      - "tests/eqx_mlflow/**"
+      - "dev/pyproject.py"
+      - "pyproject.toml"
+      - "pyproject.release.toml"
+      - ".github/workflows/eqx-mlflow.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+permissions: {}
+cache-mode: none
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/untracked
+      - uses: ./.github/actions/setup-python
+
+      - name: Run Equanimo plugin tests
+        run: |
+          uv run pytest tests/eqx_mlflow

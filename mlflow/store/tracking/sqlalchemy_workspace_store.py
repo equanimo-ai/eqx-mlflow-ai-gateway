@@ -17,6 +17,7 @@ from mlflow.protos.databricks_pb2 import (
     INVALID_PARAMETER_VALUE,
     INVALID_STATE,
     RESOURCE_DOES_NOT_EXIST,
+    ErrorCode,
 )
 from mlflow.store.tracking.dbmodels.models import (
     SqlAssessmentDailyRollup,
@@ -502,7 +503,20 @@ class WorkspaceAwareSqlAlchemyStore(WorkspaceAwareMixin, SqlAlchemyStore):
         """
 
         provider = self._get_workspace_provider_instance()
-        default_workspace, supports_default = get_default_workspace_optional(provider)
+        try:
+            default_workspace, supports_default = get_default_workspace_optional(provider)
+        except MlflowException as e:
+            # A provider that requires every request to name its workspace signals it by
+            # raising INVALID_PARAMETER_VALUE from ``get_default_workspace``. Requests are
+            # rejected for it elsewhere; startup just has no default workspace to bootstrap.
+            if e.error_code != ErrorCode.Name(INVALID_PARAMETER_VALUE):
+                raise
+            _logger.info(
+                "Workspace provider %s requires an explicit workspace; "
+                "skipping default experiment bootstrap.",
+                type(provider).__name__,
+            )
+            return
 
         if not supports_default:
             provider_name = (

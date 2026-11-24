@@ -77,6 +77,15 @@ export MLFLOW_TRACKING_URI="http://your-mlflow-server:5000"
 
 """  # noqa: E501
 
+# Equanimo plugin package (`eqx_mlflow`). It extends the server, SQL storage and gateway, so it
+# ships with the full `mlflow` distributions only, never with skinny or tracing.
+EQX_PACKAGE_TYPES = (PackageType.DEV, PackageType.RELEASE)
+EQX_INCLUDE_FILES = ["eqx_mlflow", "eqx_mlflow.*"]
+EQX_WORKSPACE_PROVIDER_BUILDER = "eqx_mlflow.workspace_store:build_tenant_workspace_store"
+# Keep in sync with `mlflow.store.db.db_types.DATABASE_ENGINES`; enforced by
+# tests/eqx_mlflow/test_workspace_store_registration.py.
+EQX_DATABASE_ENGINES = ["postgresql", "mysql", "sqlite", "mssql"]
+
 # Tracing SDK should only include the minimum set of MLflow modules
 # to minimize the size of the package.
 TRACING_INCLUDE_FILES = [
@@ -422,6 +431,16 @@ def build(package_type: PackageType) -> None:
                     "https": "mlflow.deployments.mlflow",
                     "openai": "mlflow.deployments.openai",
                 },
+                **(
+                    {
+                        "mlflow.workspace_provider": {
+                            f"eqx+{engine}": EQX_WORKSPACE_PROVIDER_BUILDER
+                            for engine in EQX_DATABASE_ENGINES
+                        },
+                    }
+                    if package_type in EQX_PACKAGE_TYPES
+                    else {}
+                ),
             }
             if package_type != PackageType.TRACING
             else None,
@@ -431,7 +450,11 @@ def build(package_type: PackageType) -> None:
                 "packages": {
                     "find": {
                         "where": ["."],
-                        "include": ["mlflow", "mlflow.*"]
+                        "include": [
+                            "mlflow",
+                            "mlflow.*",
+                            *(EQX_INCLUDE_FILES if package_type in EQX_PACKAGE_TYPES else []),
+                        ]
                         if package_type != PackageType.TRACING
                         else TRACING_INCLUDE_FILES,
                         "exclude": ["tests", "tests.*"]

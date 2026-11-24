@@ -761,6 +761,31 @@ def test_create_experiment_requires_effective_artifact_root(workspace_tracking_s
             workspace_tracking_store.create_experiment("should-fail")
 
 
+def test_store_starts_when_workspace_provider_requires_an_explicit_workspace(
+    tmp_path, db_uri, monkeypatch
+):
+    monkeypatch.setenv(MLFLOW_ENABLE_WORKSPACES.name, "true")
+
+    class ExplicitWorkspaceProvider:
+        def get_default_workspace(self):
+            raise MlflowException.invalid_parameter_value("Active workspace is required.")
+
+    provider = ExplicitWorkspaceProvider()
+    monkeypatch.setattr(
+        WorkspaceAwareSqlAlchemyStore,
+        "_get_workspace_provider_instance",
+        lambda self, provider=provider: provider,
+    )
+    artifact_dir = tmp_path / "artifacts"
+    artifact_dir.mkdir()
+
+    store = tracking_utils._get_sqlalchemy_store(db_uri, artifact_dir.as_uri())
+    try:
+        assert isinstance(store, WorkspaceAwareSqlAlchemyStore)
+    finally:
+        store._dispose_engine()
+
+
 def test_resolve_trace_archival_config_uses_workspace_provider(
     workspace_tracking_store, monkeypatch
 ):
