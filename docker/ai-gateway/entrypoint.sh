@@ -5,6 +5,7 @@ set -eu
 case "${1:-serve}" in
   migrate) exec mlflow db upgrade "$MLFLOW_BACKEND_STORE_URI" ;;
   serve)
+    : "${MLFLOW_CRYPTO_KEK_PASSPHRASE:?}"
     exec mlflow server \
       --host 0.0.0.0 --port 5000 \
       --backend-store-uri "$MLFLOW_BACKEND_STORE_URI" \
