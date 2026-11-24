@@ -184,6 +184,23 @@ def test_x_frame_options_configuration(monkeypatch: pytest.MonkeyPatch):
     assert "X-Frame-Options" not in response.headers
 
 
+def test_frame_ancestors_replaces_x_frame_options(monkeypatch: pytest.MonkeyPatch):
+    app = Flask(__name__)
+
+    @app.route("/test")
+    def test():
+        return "OK"
+
+    monkeypatch.setenv("MLFLOW_SERVER_FRAME_ANCESTORS", "https://app.dev.equanimo.io")
+    security.init_security_middleware(app)
+    response = Client(app).get("/test")
+    assert (
+        response.headers.get("Content-Security-Policy")
+        == "frame-ancestors 'self' https://app.dev.equanimo.io"
+    )
+    assert "X-Frame-Options" not in response.headers
+
+
 def test_notebook_trace_renderer_skips_x_frame_options(monkeypatch: pytest.MonkeyPatch):
     from mlflow.tracing.constant import TRACE_RENDERER_ASSET_PATH
 

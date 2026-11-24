@@ -1,5 +1,7 @@
-import React from 'react';
-import { useSearchParams } from '../common/utils/RoutingUtils';
+import React, { useEffect } from 'react';
+import { useNavigate, useSearchParams } from '../common/utils/RoutingUtils';
+import GatewayRoutes from '../gateway/routes';
+import { SERVER_FEATURE_KEYS, useFeatureEnabled } from '../experiment-tracking/hooks/useServerInfo';
 import { shouldEnableWorkspaces } from '../common/utils/FeatureUtils';
 import { extractWorkspaceFromSearchParams } from '../workspaces/utils/WorkspaceUtils';
 
@@ -19,6 +21,17 @@ const HomePage = React.lazy(() => import('./HomePage'));
 export const RootPage = () => {
   const [searchParams] = useSearchParams();
   const workspacesEnabled = shouldEnableWorkspaces();
+  const gatewayOnly = useFeatureEnabled(SERVER_FEATURE_KEYS.GATEWAY_ONLY, false);
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (gatewayOnly) {
+      navigate(GatewayRoutes.gatewayPageRoute, { replace: true });
+    }
+  }, [gatewayOnly, navigate]);
+  if (gatewayOnly) {
+    return null;
+  }
 
   // If not in workspace mode, always show HomePage
   if (!workspacesEnabled) {

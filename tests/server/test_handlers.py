@@ -588,6 +588,17 @@ def test_server_info_reports_no_scheduled_detection_when_the_check_itself_fails(
         assert response.get_json()["features_enabled"]["scheduled_issue_detection"] is False
 
 
+def test_server_info_gateway_only_flag(monkeypatch):
+    monkeypatch.delenv("MLFLOW_UI_GATEWAY_ONLY", raising=False)
+    with app.test_client() as c:
+        features = c.get("/api/3.0/mlflow/server-info").get_json()["features_enabled"]
+        assert features["gateway_only"] is False
+
+        monkeypatch.setenv("MLFLOW_UI_GATEWAY_ONLY", "true")
+        features = c.get("/api/3.0/mlflow/server-info").get_json()["features_enabled"]
+        assert features["gateway_only"] is True
+
+
 def test_server_info_multipart_capabilities_disabled_by_default():
     with app.test_client() as c:
         response = c.get("/api/3.0/mlflow/server-info")
