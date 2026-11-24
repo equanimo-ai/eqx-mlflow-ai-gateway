@@ -27,8 +27,6 @@ variable "desired_count" {
   default = 1
 }
 variable "capacity_provider_strategy" { type = any }
-variable "db_proxy_endpoint_ssm_path" { type = string }
-variable "aurora_sg_id" { type = string }
 variable "log_retention_days" {
   type    = number
   default = 7
