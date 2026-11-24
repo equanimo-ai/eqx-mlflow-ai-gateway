@@ -1,5 +1,3 @@
-# Outputs are added in later tasks.
-
 output "db_client_security_group_id" {
   value = nonsensitive(data.aws_ssm_parameter.db_client_sg.value)
 }
@@ -15,7 +13,7 @@ output "db_bootstrap_run_task" {
 
 output "ecr_repository_url" {
   description = "ECR repository the deploy workflow pushes images to."
-  value = aws_ecr_repository.gateway.repository_url
+  value       = aws_ecr_repository.gateway.repository_url
 }
 
 output "ecs_cluster_name" {

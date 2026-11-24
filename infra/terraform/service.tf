@@ -33,7 +33,9 @@ module "service" {
   health_check_path          = "/health"
   alb_target_group_arn       = aws_lb_target_group.this.arn
   log_retention_days         = var.log_retention_days
-  ssm_read_prefix            = module.deploy.ssm_prefix
+  # The module requires a prefix but this service reads no SSM; point it at an
+  # app-private, empty path so the task role cannot read other apps' /apc/dev/* params.
+  ssm_read_prefix = "${module.deploy.ssm_prefix}/modules/mlflow-gateway"
 
   # Reached only through the ALB; no Cloud Map registration.
   enable_service_discovery      = false

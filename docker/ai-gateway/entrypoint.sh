@@ -10,6 +10,7 @@ case "${1:-serve}" in
       --host 0.0.0.0 --port 5000 \
       --backend-store-uri "$MLFLOW_BACKEND_STORE_URI" \
       --default-artifact-root "$MLFLOW_ARTIFACT_ROOT" \
+      --no-serve-artifacts \
       --workers 2
     ;;
   *) exec "$@" ;;

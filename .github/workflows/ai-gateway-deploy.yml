@@ -158,3 +158,20 @@ jobs:
           aws ecs update-service --region "$AWS_REGION" --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" \
             --task-definition "$TASK_ARN" >/dev/null
           aws ecs wait services-stable --region "$AWS_REGION" --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE"
+
+      - name: Assert new revision is the completed primary deployment
+        env:
+          TASK_ARN: ${{ steps.taskdef.outputs.arn }}
+        run: |
+          read -r DESIRED PRIMARY STATE < <(aws ecs describe-services --region "$AWS_REGION" \
+            --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" \
+            --query "services[0].[desiredCount, deployments[?status=='PRIMARY']|[0].taskDefinition, deployments[?status=='PRIMARY']|[0].rolloutState]" \
+            --output text)
+          if [ "$DESIRED" = "0" ]; then
+            echo "::error::desiredCount is 0; the service is in its off-hours window, nothing was deployed"
+            exit 1
+          fi
+          if [ "$PRIMARY" != "$TASK_ARN" ] || [ "$STATE" != "COMPLETED" ]; then
+            echo "::error::PRIMARY=$PRIMARY rolloutState=$STATE; expected $TASK_ARN COMPLETED (rolled back or failed)"
+            exit 1
+          fi

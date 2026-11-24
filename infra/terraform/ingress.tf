@@ -14,6 +14,9 @@ resource "aws_lb_target_group" "this" {
   vpc_id      = module.deploy.vpc_id
   target_type = "ip"
 
+  # Default 300s pushes a normal deploy past the services-stable waiter ceiling.
+  deregistration_delay = 30
+
   health_check {
     path                = "/health"
     healthy_threshold   = 2
