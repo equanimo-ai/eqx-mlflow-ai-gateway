@@ -615,3 +615,25 @@ def test_fastapi_cors_allows_configured_origin(monkeypatch: pytest.MonkeyPatch):
         headers={"Host": "localhost", "Origin": "http://evil.com"},
     )
     assert response.headers.get("access-control-allow-origin") is None
+
+
+def test_fastapi_frame_ancestors_replaces_x_frame_options(monkeypatch: pytest.MonkeyPatch):
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    from mlflow.server.fastapi_security import SecurityHeadersMiddleware
+
+    monkeypatch.setenv("MLFLOW_SERVER_FRAME_ANCESTORS", "https://app.dev.equanimo.io")
+    app = FastAPI()
+    app.add_middleware(SecurityHeadersMiddleware)
+
+    @app.get("/test")
+    def test():
+        return "OK"
+
+    response = TestClient(app).get("/test")
+    assert (
+        response.headers["content-security-policy"]
+        == "frame-ancestors 'self' https://app.dev.equanimo.io"
+    )
+    assert "x-frame-options" not in response.headers

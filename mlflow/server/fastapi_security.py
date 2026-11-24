@@ -7,6 +7,7 @@ from starlette.types import ASGIApp
 
 from mlflow.environment_variables import (
     MLFLOW_SERVER_DISABLE_SECURITY_MIDDLEWARE,
+    MLFLOW_SERVER_FRAME_ANCESTORS,
     MLFLOW_SERVER_X_FRAME_OPTIONS,
 )
 from mlflow.server.security_utils import (
@@ -65,6 +66,7 @@ class SecurityHeadersMiddleware:
     def __init__(self, app: ASGIApp):
         self.app = app
         self.x_frame_options = MLFLOW_SERVER_X_FRAME_OPTIONS.get()
+        self.frame_ancestors = MLFLOW_SERVER_FRAME_ANCESTORS.get().strip()
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http":
@@ -79,7 +81,11 @@ class SecurityHeadersMiddleware:
                 path = scope.get("path", "")
                 is_notebook_renderer = path.startswith(TRACE_RENDERER_ASSET_PATH)
 
-                if (
+                if self.frame_ancestors and not is_notebook_renderer:
+                    headers[b"content-security-policy"] = (
+                        f"frame-ancestors 'self' {self.frame_ancestors}".encode()
+                    )
+                elif (
                     self.x_frame_options
                     and self.x_frame_options.upper() != "NONE"
                     and not is_notebook_renderer

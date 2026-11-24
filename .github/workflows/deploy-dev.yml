@@ -171,10 +171,15 @@ jobs:
         env:
           TASK_ARN: ${{ steps.taskdef.outputs.arn }}
         run: |
-          read -r DESIRED PRIMARY STATE < <(aws ecs describe-services --region "$AWS_REGION" \
-            --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" \
-            --query "services[0].[desiredCount, deployments[?status=='PRIMARY']|[0].taskDefinition, deployments[?status=='PRIMARY']|[0].rolloutState]" \
-            --output text)
+          # services-stable can return before the deployment's rolloutState flips to COMPLETED.
+          for _ in $(seq 1 30); do
+            read -r DESIRED PRIMARY STATE < <(aws ecs describe-services --region "$AWS_REGION" \
+              --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" \
+              --query "services[0].[desiredCount, deployments[?status=='PRIMARY']|[0].taskDefinition, deployments[?status=='PRIMARY']|[0].rolloutState]" \
+              --output text)
+            [ "$STATE" = "IN_PROGRESS" ] || break
+            sleep 10
+          done
           if [ "$DESIRED" = "0" ]; then
             echo "::error::desiredCount is 0; the service is in its off-hours window, nothing was deployed"
             exit 1
