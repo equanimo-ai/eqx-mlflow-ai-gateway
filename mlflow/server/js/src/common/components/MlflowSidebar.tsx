@@ -98,6 +98,7 @@ export function MlflowSidebar({
   const { theme } = useDesignSystemTheme();
   const enableWorkflowBasedNavigation = shouldEnableWorkflowBasedNavigation();
   const gatewayEnabled = useFeatureEnabled(SERVER_FEATURE_KEYS.GATEWAY);
+  const gatewayOnly = useFeatureEnabled(SERVER_FEATURE_KEYS.GATEWAY_ONLY, false);
   // WorkflowType context is always available, but UI is guarded by feature flag
   const { workflowType, setWorkflowType } = useWorkflowType();
   const { experimentId } = useParams();
@@ -153,7 +154,7 @@ export function MlflowSidebar({
 
   const menuItems: MenuItemWithNested[] = useMemo(
     () => [
-      ...(!showNestedExperimentItems
+      ...(!showNestedExperimentItems && !gatewayOnly
         ? [
             {
               key: 'home',
@@ -167,25 +168,31 @@ export function MlflowSidebar({
             },
           ]
         : []),
-      {
-        key: 'experiments',
-        icon: <BeakerIcon />,
-        linkProps: {
-          to: ExperimentTrackingRoutes.experimentsObservatoryRoute,
-          isActive: isExperimentsActive,
-          children: <FormattedMessage defaultMessage="Experiments" description="Sidebar link for experiments tab" />,
-        },
-        componentId: 'mlflow.sidebar.experiments_tab_link',
-        nestedItems: showNestedExperimentItems ? (
-          <MlflowSidebarExperimentItems
-            collapsed={!showSidebar}
-            experimentId={activeExperimentId ?? undefined}
-            workflowType={workflowType}
-            onBackClick={clearLastSelectedExperiment}
-          />
-        ) : undefined,
-      },
-      ...(workflowType === WorkflowType.MACHINE_LEARNING || !enableWorkflowBasedNavigation
+      ...(gatewayOnly
+        ? []
+        : [
+            {
+              key: 'experiments',
+              icon: <BeakerIcon />,
+              linkProps: {
+                to: ExperimentTrackingRoutes.experimentsObservatoryRoute,
+                isActive: isExperimentsActive,
+                children: (
+                  <FormattedMessage defaultMessage="Experiments" description="Sidebar link for experiments tab" />
+                ),
+              },
+              componentId: 'mlflow.sidebar.experiments_tab_link',
+              nestedItems: showNestedExperimentItems ? (
+                <MlflowSidebarExperimentItems
+                  collapsed={!showSidebar}
+                  experimentId={activeExperimentId ?? undefined}
+                  workflowType={workflowType}
+                  onBackClick={clearLastSelectedExperiment}
+                />
+              ) : undefined,
+            },
+          ]),
+      ...(!gatewayOnly && (workflowType === WorkflowType.MACHINE_LEARNING || !enableWorkflowBasedNavigation)
         ? [
             {
               key: 'models',
@@ -201,7 +208,9 @@ export function MlflowSidebar({
             },
           ]
         : []),
-      ...(shouldShowGenAIFeatures(enableWorkflowBasedNavigation, workflowType) && !showNestedExperimentItems
+      ...(!gatewayOnly &&
+      shouldShowGenAIFeatures(enableWorkflowBasedNavigation, workflowType) &&
+      !showNestedExperimentItems
         ? [
             {
               key: 'ai-registry',
@@ -255,6 +264,7 @@ export function MlflowSidebar({
       clearLastSelectedExperiment,
       enableWorkflowBasedNavigation,
       gatewayEnabled,
+      gatewayOnly,
       location,
       showSidebar,
     ],
@@ -369,22 +379,24 @@ export function MlflowSidebar({
             ))}
         </ul>
         <div>
-          <MlflowSidebarLink
-            disableWorkspacePrefix
-            css={{ paddingBlock: theme.spacing.sm }}
-            to={docsUrl}
-            componentId="mlflow.sidebar.docs_link"
-            isActive={() => false}
-            icon={<InfoBookIcon />}
-            collapsed={!showSidebar}
-            openInNewTab
-          >
-            <span css={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
-              <FormattedMessage defaultMessage="Docs" description="Sidebar link for docs page" />
-              <NewWindowIcon css={{ fontSize: theme.typography.fontSizeBase }} />
-            </span>
-          </MlflowSidebarLink>
-          {showWorkspaceMenuItems && !showNestedSettingsItems && (
+          {!gatewayOnly && (
+            <MlflowSidebarLink
+              disableWorkspacePrefix
+              css={{ paddingBlock: theme.spacing.sm }}
+              to={docsUrl}
+              componentId="mlflow.sidebar.docs_link"
+              isActive={() => false}
+              icon={<InfoBookIcon />}
+              collapsed={!showSidebar}
+              openInNewTab
+            >
+              <span css={{ display: 'flex', alignItems: 'center', gap: theme.spacing.sm }}>
+                <FormattedMessage defaultMessage="Docs" description="Sidebar link for docs page" />
+                <NewWindowIcon css={{ fontSize: theme.typography.fontSizeBase }} />
+              </span>
+            </MlflowSidebarLink>
+          )}
+          {showWorkspaceMenuItems && !showNestedSettingsItems && !gatewayOnly && (
             <MlflowSidebarLink
               css={{ paddingBlock: theme.spacing.sm }}
               to={`${ExperimentTrackingRoutes.getSettingsSectionRoute(SETTINGS_SECTION_GENERAL)}?${SETTINGS_RETURN_TO_PARAM}=${encodeURIComponent(location.pathname + location.search)}`}

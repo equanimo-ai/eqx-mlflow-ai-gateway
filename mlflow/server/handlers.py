@@ -96,6 +96,7 @@ from mlflow.environment_variables import (
     MLFLOW_ENABLE_WORKSPACES,
     MLFLOW_PRESIGNED_DOWNLOAD_URL_TTL_SECONDS,
     MLFLOW_SERVER_INFO_TRACKING_AUTH,
+    MLFLOW_UI_GATEWAY_ONLY,
 )
 from mlflow.exceptions import (
     MlflowException,
@@ -7930,6 +7931,7 @@ def build_server_info_payload() -> dict[str, Any]:
         SERVER_INFO_MODEL_ARTIFACT_PRESIGNED_DOWNLOADS_SUPPORTED: presigned_transfers_supported,
         SERVER_INFO_FEATURES_ENABLED: {
             "gateway": MLFLOW_ENABLE_AI_GATEWAY.get(),
+            "gateway_only": MLFLOW_UI_GATEWAY_ONLY.get(),
             "scheduled_issue_detection": scheduled_issue_detection_enabled,
         },
         SERVER_INFO_TRACKING_AUTH: MLFLOW_SERVER_INFO_TRACKING_AUTH.get() or "",

@@ -119,6 +119,10 @@ MLFLOW_ENABLE_WORKSPACES = _BooleanEnvironmentVariable("MLFLOW_ENABLE_WORKSPACES
 #: (default: ``True``)
 MLFLOW_ENABLE_AI_GATEWAY = _BooleanEnvironmentVariable("MLFLOW_ENABLE_AI_GATEWAY", True)
 
+#: When set, the UI shows only the AI Gateway section.
+#: (default: ``False``)
+MLFLOW_UI_GATEWAY_ONLY = _BooleanEnvironmentVariable("MLFLOW_UI_GATEWAY_ONLY", False)
+
 #: **Experimental** — subject to change or removal in a future release.
 #: Controls whether the MLflow Assistant API is reachable from non-localhost clients. When true,
 #: the server runs the work the assistant would otherwise run on the host — the ``Bash`` tool and
@@ -1319,6 +1323,12 @@ MLFLOW_SERVER_DISABLE_SECURITY_MIDDLEWARE = _EnvironmentVariable(
 MLFLOW_SERVER_X_FRAME_OPTIONS = _EnvironmentVariable(
     "MLFLOW_SERVER_X_FRAME_OPTIONS", str, "SAMEORIGIN"
 )
+
+#: Space-separated origins allowed to embed the MLflow UI in an iframe, sent as the
+#: ``Content-Security-Policy: frame-ancestors 'self' <origins>`` header. When set it replaces
+#: ``X-Frame-Options``, which cannot allow a specific cross-origin parent.
+#: (default: ``""``, meaning ``MLFLOW_SERVER_X_FRAME_OPTIONS`` applies)
+MLFLOW_SERVER_FRAME_ANCESTORS = _EnvironmentVariable("MLFLOW_SERVER_FRAME_ANCESTORS", str, "")
 
 #: Deny (403) authenticated requests to routes with no authorization decision in the
 #: built-in basic-auth app (fail-closed). On by default; set to ``False`` to restore the

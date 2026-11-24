@@ -36,6 +36,7 @@ interface ServerInfoResponse {
  */
 export const SERVER_FEATURE_KEYS = {
   GATEWAY: 'gateway',
+  GATEWAY_ONLY: 'gateway_only',
   SCHEDULED_ISSUE_DETECTION: 'scheduled_issue_detection',
 } as const;
 

@@ -6,6 +6,7 @@ from flask_cors import CORS
 
 from mlflow.environment_variables import (
     MLFLOW_SERVER_DISABLE_SECURITY_MIDDLEWARE,
+    MLFLOW_SERVER_FRAME_ANCESTORS,
     MLFLOW_SERVER_X_FRAME_OPTIONS,
 )
 from mlflow.server.security_utils import (
@@ -53,6 +54,7 @@ def init_security_middleware(app: Flask) -> None:
     allowed_origins = get_allowed_origins()
     allowed_hosts = get_allowed_hosts()
     x_frame_options = MLFLOW_SERVER_X_FRAME_OPTIONS.get()
+    frame_ancestors = MLFLOW_SERVER_FRAME_ANCESTORS.get().strip()
 
     if allowed_origins and "*" in allowed_origins:
         _logger.warning(
@@ -112,7 +114,11 @@ def init_security_middleware(app: Flask) -> None:
         # Skip X-Frame-Options for notebook-trace-renderer to allow iframe embedding in Jupyter
         is_notebook_renderer = request.path.startswith(TRACE_RENDERER_ASSET_PATH)
 
-        if x_frame_options and x_frame_options.upper() != "NONE" and not is_notebook_renderer:
+        if frame_ancestors and not is_notebook_renderer:
+            response.headers["Content-Security-Policy"] = (
+                f"frame-ancestors 'self' {frame_ancestors}"
+            )
+        elif x_frame_options and x_frame_options.upper() != "NONE" and not is_notebook_renderer:
             response.headers["X-Frame-Options"] = x_frame_options.upper()
 
         if (
