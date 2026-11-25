@@ -233,7 +233,7 @@ export function MlflowSidebar({
             },
           ]
         : []),
-      ...(shouldShowGenAIFeatures(enableWorkflowBasedNavigation, workflowType) && gatewayEnabled
+      ...((gatewayOnly || shouldShowGenAIFeatures(enableWorkflowBasedNavigation, workflowType)) && gatewayEnabled
         ? [
             {
               key: 'gateway',
@@ -300,8 +300,14 @@ export function MlflowSidebar({
         gap: theme.spacing.md,
       }}
     >
-      <div css={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        {showSidebar && (
+      <div
+        css={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: gatewayOnly ? 'flex-end' : 'space-between',
+        }}
+      >
+        {showSidebar && !gatewayOnly && (
           <div css={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xs }}>
             <Link componentId="mlflow.sidebar.logo_home_link" to={ExperimentTrackingRoutes.rootRoute}>
               <MlflowLogo
@@ -337,7 +343,7 @@ export function MlflowSidebar({
           <FormattedMessage defaultMessage="Home" description="Sidebar link for home page" />
         </MlflowSidebarLink>
       )}
-      {enableWorkflowBasedNavigation && showWorkspaceMenuItems && showSidebar && (
+      {enableWorkflowBasedNavigation && !gatewayOnly && showWorkspaceMenuItems && showSidebar && (
         <MlflowSidebarWorkflowSwitch workflowType={workflowType} setWorkflowType={setWorkflowType} />
       )}
 
